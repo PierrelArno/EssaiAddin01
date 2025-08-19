@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Texte gauche / Image droite</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Office.js est injecté automatiquement par Script Lab -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1 class="title">Texte ⬅️ | Image ➡️</h1>
+
+    <label class="label">Texte (colonne gauche)</label>
+    <textarea id="leftText" class="input" rows="4" placeholder="Écris ton texte ici..."></textarea>
+
+    <label class="label">Image (colonne droite)</label>
+    <input id="imageFile" class="input" type="file" accept="image/*" />
+
+    <div class="row">
+      <label class="label small">Largeur colonnes (gauche/droite)</label>
+      <input id="leftWidth" class="input num" type="number" value="60" min="10" max="90" />
+      <span class="unit">%</span>
+      <input id="rightWidth" class="input num" type="number" value="40" min="10" max="90" />
+      <span class="unit">%</span>
+    </div>
+
+    <div class="row">
+      <label class="label small">Taille image (px)</label>
+      <input id="imgWidth" class="input num" type="number" value="220" min="40" />
+      <span class="unit">px</span>
+    </div>
+
+    <button id="btnInsert" class="btn">Insérer dans Word</button>
+
+    <hr />
+
+    <h2 class="subtitle">Alternative rapide (paragraphe aligné)</h2>
+    <button id="btnAlt" class="btn ghost">Texte puis image alignée à droite</button>
+
+    <p class="hint">
+      Astuce : le tableau est sans bordures — il sert juste de grille invisible pour obtenir texte à gauche et image à droite sur la même ligne.
+    </p>
+  </main>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>
