@@ -1,87 +1,123 @@
+// Quand Office est prêt
 Office.onReady(() => {
-  // Puis attendre que le DOM soit prêt
   document.addEventListener("DOMContentLoaded", () => {
-    const btnInsert = document.getElementById("btnInsert");
-    const btnAlt = document.getElementById("btnAlt");
-
-    if (btnInsert) btnInsert.addEventListener("click", insertTwoColumnLayout);
-    if (btnAlt) btnAlt.addEventListener("click", insertAltParagraphRight);
+    document.getElementById("btnInsert").addEventListener("click", insertTwoColumnLayout);
+    document.getElementById("btnAlt").addEventListener("click", insertAltParagraphRight);
   });
 });
 
-/** Convertit un File (image) en base64 (sans le préfixe data:) */
+/** Petit helper pour clamp (%) */
+function clampPct(v) {
+  if (isNaN(v)) return 50;
+  return Math.max(10, Math.min(90, v));
+}
+
+/** Convertit un fichier image en base64 */
+// --- Utils robustes ---
+
+function base64FromArrayBuffer(arrayBuffer) {
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = "";
+  const chunk = 0x8000; // pour éviter les dépassements de pile
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+/** Convertit un fichier image en base64 (sans prefix data:) */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
+
+    const allowed = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+    if (file.type && !allowed.includes(file.type)) {
+      alert("Format non supporté. Choisis PNG/JPEG/GIF/WebP.");
+      return resolve(null);
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
-      const result = reader.result; // "data:image/png;base64,XXXX"
-      if (typeof result === "string") {
-        const base64 = result.split(",")[1]; // garder seulement la partie base64
+      try {
+        // Méthode robuste: ArrayBuffer -> base64
+        const buf = reader.result; // ArrayBuffer
+        const base64 = base64FromArrayBuffer(buf);
         resolve(base64);
-      } else {
-        resolve(null);
+      } catch (e) {
+        reject(e);
       }
     };
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsArrayBuffer(file); // ⚠️ on lit en ArrayBuffer (plus fiable)
   });
 }
 
-/** Insère un tableau 1x2 invisible : texte (gauche) + image (droite). */
+// Image PNG de test (petit carré 64x64) pour diagnostiquer si Word insère bien
+const TEST_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsSAAALEgHS3X78AAAAGXRFWHRTb2Z0d2FyZQBwYWludC5uZXQgNC4yLjGqq7UAAABhSURBVHic7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPgN5cQAAf3p4eQAAAABJRU5ErkJggg==";
+
+
+/** Texte à gauche + image à droite (même ligne via tableau invisible) */
 async function insertTwoColumnLayout() {
   const leftText = (document.getElementById("leftText").value || "").trim();
-  const leftWidth = clampPct(parseInt(document.getElementById("leftWidth")?.value, 10) || 60);
-  const rightWidth = clampPct(parseInt(document.getElementById("rightWidth")?.value, 10) || 40);
-  const imgWidthPx = Math.max(40, parseInt(document.getElementById("imgWidth")?.value, 10) || 220);
+  const leftWidth = clampPct(parseInt(document.getElementById("leftWidth").value, 10) || 60);
+  const rightWidth = clampPct(parseInt(document.getElementById("rightWidth").value, 10) || 40);
+  const imgWidthPx = Math.max(40, parseInt(document.getElementById("imgWidth").value, 10) || 220);
 
-  const fileInput = document.getElementById("imageFile");
-  const file = fileInput && fileInput.files && fileInput.files[0];
+  const file = document.getElementById("imageFile").files[0];
   const base64Img = await fileToBase64(file);
 
   await Word.run(async (context) => {
     const body = context.document.body;
 
-    // Crée un tableau 1 ligne / 2 colonnes
+    // Crée un tableau invisible
     const table = body.insertTable(1, 2, Word.InsertLocation.end, [[leftText || ""]]);
+    ["InsideVertical","InsideHorizontal","Top","Bottom","Left","Right","Outside"]
+      .forEach(b => table.getBorder(b).clear());
 
-    // Enlève toutes les bordures (tableau invisible)
-    table.getBorder("InsideVertical").clear();
-    table.getBorder("InsideHorizontal").clear();
-    table.getBorder("Top").clear();
-    table.getBorder("Bottom").clear();
-    table.getBorder("Left").clear();
-    table.getBorder("Right").clear();
-    table.getBorder("Outside").clear();
-
-    // Largeur des colonnes (selon build, Word peut ignorer les %)
     try {
-      table.columns.getItemAt(0).width = leftWidth;   // %
-      table.columns.getItemAt(1).width = rightWidth;  // %
-    } catch (e) {
-      // Si non supporté, Word fera l'ajustement auto.
-    }
+      table.columns.getItemAt(0).width = leftWidth;
+      table.columns.getItemAt(1).width = rightWidth;
+    } catch (e) { /* Word ajuste si non supporté */ }
 
-    // Cellule gauche : texte
     const row = table.rows.getFirst();
-    const leftCellBody = row.cells.getItemAt(0).body;
+    const leftCell = row.cells.getItem(0).body;
     if (!leftText) {
-      leftCellBody.clear();
-      leftCellBody.insertParagraph("Texte à gauche…", Word.InsertLocation.start);
+      leftCell.clear();
+      leftCell.insertParagraph("Texte à gauche…", Word.InsertLocation.start);
     }
 
-    // Cellule droite : image ou placeholder
-    const rightCellBody = row.cells.getItemAt(1).body;
+    const rightCell = row.cells.getItem(1).body;
     if (base64Img) {
-      const pic = rightCellBody.insertInlinePictureFromBase64(base64Img, Word.InsertLocation.start);
+      const pic = rightCell.insertInlinePictureFromBase64(base64Img, Word.InsertLocation.start);
       pic.width = imgWidthPx;
     } else {
-      rightCellBody.insertParagraph("(Aucune image sélectionnée)", Word.InsertLocation.start);
+      rightCell.insertParagraph("(Aucune image sélectionnée)", Word.InsertLocation.start);
     }
 
     await context.sync();
-  }).catch((err) => {
-    console.error(err);
-    alert("Erreur lors de l'insertion : " + err.message);
-  });
+  }).catch(err => alert("Erreur : " + err.message));
+}
+
+/** Alternative : texte puis image alignée à droite (en dessous) */
+async function insertAltParagraphRight() {
+  const leftText = (document.getElementById("leftText").value || "Texte à gauche").trim();
+  const file = document.getElementById("imageFile").files[0];
+  const base64Img = await fileToBase64(file);
+
+  await Word.run(async (context) => {
+    const body = context.document.body;
+
+    const p = body.insertParagraph(leftText, Word.InsertLocation.end);
+    p.alignment = "Left";
+
+    if (base64Img) {
+      const pic = body.insertInlinePictureFromBase64(base64Img, Word.InsertLocation.end);
+      pic.parentParagraph.alignment = "Right";
+    } else {
+      body.insertParagraph("(Aucune image sélectionnée)", Word.InsertLocation.end).alignment = "Right";
+    }
+
+    await context.sync();
+  }).catch(err => alert("Erreur : " + err.message));
 }

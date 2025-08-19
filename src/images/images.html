@@ -3,47 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <title>Texte gauche / Image droite</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Office.js (Fourni par Word ; le garder pour la compatibilité) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-
   <link rel="stylesheet" href="./images.css" />
 </head>
 <body>
-  <main class="container">
-    <h1 class="title">Texte ⬅️ | Image ➡️</h1>
+  <main>
+    <h1>Texte ⬅️ | Image ➡️</h1>
 
-    <label class="label" for="leftText">Texte (colonne gauche)</label>
-    <textarea id="leftText" class="input" rows="4" placeholder="Écris ton texte ici..."></textarea>
+    <label for="leftText">Texte (colonne gauche)</label>
+    <textarea id="leftText" rows="3" placeholder="Écris ton texte ici..."></textarea>
 
-    <label class="label" for="imageFile">Image (colonne droite)</label>
-    <input id="imageFile" class="input" type="file" accept="image/*" />
+    <label for="imageFile">Image (colonne droite)</label>
+    <input id="imageFile" type="file" accept="image/*" />
 
-    <div class="row">
-      <label class="label small" for="leftWidth">Largeur colonnes (gauche/droite)</label>
-      <input id="leftWidth" class="input num" type="number" value="60" min="10" max="90" />
-      <span class="unit">%</span>
-      <input id="rightWidth" class="input num" type="number" value="40" min="10" max="90" />
-      <span class="unit">%</span>
+    <div>
+      <label for="leftWidth">Largeur gauche (%)</label>
+      <input id="leftWidth" type="number" value="60" min="10" max="90" />
+      <label for="rightWidth">Largeur droite (%)</label>
+      <input id="rightWidth" type="number" value="40" min="10" max="90" />
     </div>
 
-    <div class="row">
-      <label class="label small" for="imgWidth">Taille image</label>
-      <input id="imgWidth" class="input num" type="number" value="220" min="40" />
-      <span class="unit">px</span>
+    <div>
+      <label for="imgWidth">Largeur image (px)</label>
+      <input id="imgWidth" type="number" value="220" min="40" />
     </div>
 
-    <button id="btnInsert" class="btn">Insérer dans Word</button>
-
-    <hr />
-
-    <h2 class="subtitle">Alternative rapide</h2>
-    <button id="btnAlt" class="btn ghost">Texte puis image alignée à droite</button>
-
-    <p class="hint">
-      Le tableau est invisible (sans bordures) : il sert juste de grille pour avoir texte à gauche et image à droite sur la **même ligne**.
-    </p>
+    <button id="btnInsert">Insérer texte + image</button>
+    <button id="btnAlt">Alternative (image en dessous à droite)</button>
   </main>
 
   <script src="./images.js"></script>

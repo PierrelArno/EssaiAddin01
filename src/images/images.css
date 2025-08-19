@@ -1,106 +1,113 @@
 :root {
     --bg: #0f1115;
-    --card: #151823;
+    --card: #1a1e2a;
     --text: #eaeefb;
     --muted: #9aa3b2;
     --accent: #5b8cff;
-    --accent-ghost: #2a3350;
-    --border: #242a3a;
+    --accent-hover: #729eff;
+    --border: #2b3144;
   }
   
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
   
   body {
     margin: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
   }
   
-  .container {
-    max-width: 720px;
+  main {
+    max-width: 640px;
     margin: 0 auto;
-    padding: 20px 16px 32px;
+    padding: 24px 18px 40px;
   }
   
-  .title {
-    margin: 8px 0 16px;
-    font-size: 20px;
+  h1 {
+    font-size: 22px;
+    margin: 0 0 20px;
     font-weight: 700;
+    text-align: center;
   }
   
-  .subtitle {
-    margin: 16px 0 8px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-  
-  .label {
+  label {
     display: block;
     margin: 14px 0 6px;
     color: var(--muted);
     font-size: 13px;
   }
   
-  .label.small { margin-right: 10px; }
-  
-  .input {
+  textarea,
+  input[type="text"],
+  input[type="number"],
+  input[type="file"] {
     width: 100%;
     padding: 10px 12px;
-    background: var(--card);
-    color: var(--text);
-    border: 1px solid var(--border);
     border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 14px;
     outline: none;
   }
   
-  .input:focus { border-color: var(--accent); }
-  
-  .input.num {
-    width: 100px;
-    margin-right: 6px;
+  textarea:focus,
+  input:focus {
+    border-color: var(--accent);
   }
   
-  .unit { color: var(--muted); margin-right: 10px; }
-  
-  .row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 10px;
-    flex-wrap: wrap;
+  input[type="number"] {
+    max-width: 140px;
   }
   
-  .btn {
-    margin-top: 14px;
+  div {
+    margin-top: 12px;
+  }
+  
+  button {
+    margin-top: 16px;
     width: 100%;
-    padding: 12px 14px;
+    padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid transparent;
+    border: none;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease, filter 0.2s ease;
+  }
+  
+  #btnInsert {
     background: var(--accent);
     color: white;
-    font-weight: 700;
-    cursor: pointer;
   }
   
-  .btn:hover { filter: brightness(1.05); }
+  #btnInsert:hover {
+    background: var(--accent-hover);
+  }
   
-  .btn.ghost {
-    background: var(--accent-ghost);
-    border-color: var(--border);
+  #btnAlt {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  
+  #btnAlt:hover {
+    filter: brightness(1.1);
   }
   
   hr {
-    margin: 20px 0;
+    margin: 28px 0;
     border: none;
     border-top: 1px solid var(--border);
   }
   
   .hint {
-    color: var(--muted);
+    margin-top: 8px;
     font-size: 12px;
+    color: var(--muted);
     line-height: 1.4;
-    margin-top: 10px;
+    text-align: center;
   }
   
