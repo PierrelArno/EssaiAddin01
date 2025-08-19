@@ -4,8 +4,10 @@ const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
+// 🔹 DEV = localhost (ne pas changer)
 const urlDev = "https://localhost:3000/";
-const urlProd = "https://www.contoso.com/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
+// 🔹 PROD = remplace par ton GitHub Pages (⚠️ bien garder le slash final)
+const urlProd = "https://pierrelarno.github.io/EssaiAddin01/"; // ← mets ton URL de prod ici
 
 async function getHttpsOptions() {
   const httpsOptions = await devCerts.getHttpsServerOptions();
@@ -18,7 +20,8 @@ module.exports = async (env, options) => {
     devtool: "source-map",
     entry: {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
-      taskpane: ["./src/taskpane/taskpane.js", "./src/taskpane/taskpane.html"],
+      // ⬇️ Remplacement: on build maintenant "images" (et plus "taskpane")
+      images: ["./src/images/images.js", "./src/images/images.html"],
       commands: "./src/commands/commands.js",
     },
     output: {
@@ -42,7 +45,7 @@ module.exports = async (env, options) => {
           use: "html-loader",
         },
         {
-          test: /\.(png|jpg|jpeg|gif|ico)$/,
+          test: /\.(png|jpg|jpeg|gif|ico)$/i,
           type: "asset/resource",
           generator: {
             filename: "assets/[name][ext][query]",
@@ -51,10 +54,11 @@ module.exports = async (env, options) => {
       ],
     },
     plugins: [
+      // ⬇️ Génère images.html à la racine du dev server (https://localhost:3000/images.html)
       new HtmlWebpackPlugin({
-        filename: "taskpane.html",
-        template: "./src/taskpane/taskpane.html",
-        chunks: ["polyfill", "taskpane"],
+        filename: "images.html",
+        template: "./src/images/images.html",
+        chunks: ["polyfill", "images"],
       }),
       new CopyWebpackPlugin({
         patterns: [
@@ -66,6 +70,7 @@ module.exports = async (env, options) => {
             from: "manifest*.xml",
             to: "[name]" + "[ext]",
             transform(content) {
+              // En prod, on remplace toutes les occurrences de urlDev (localhost) par urlProd (GitHub Pages)
               if (dev) {
                 return content;
               } else {
@@ -87,7 +92,8 @@ module.exports = async (env, options) => {
       },
       server: {
         type: "https",
-        options: env.WEBPACK_BUILD || options.https !== undefined ? options.https : await getHttpsOptions(),
+        options:
+          env.WEBPACK_BUILD || options.https !== undefined ? options.https : await getHttpsOptions(),
       },
       port: process.env.npm_package_config_dev_server_port || 3000,
     },

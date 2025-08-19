@@ -1,17 +1,15 @@
-(function init() {
-  // Attache les handlers quand le DOM est prêt
+Office.onReady(() => {
+  // Puis attendre que le DOM soit prêt
   document.addEventListener("DOMContentLoaded", () => {
     const btnInsert = document.getElementById("btnInsert");
     const btnAlt = document.getElementById("btnAlt");
 
-    btnInsert.addEventListener("click", insertTwoColumnLayout);
-    btnAlt.addEventListener("click", insertAltParagraphRight);
+    if (btnInsert) btnInsert.addEventListener("click", insertTwoColumnLayout);
+    if (btnAlt) btnAlt.addEventListener("click", insertAltParagraphRight);
   });
-})();
+});
 
-/**
- * Convertit un File (image) en base64 (sans le préfixe data:)
- */
+/** Convertit un File (image) en base64 (sans le préfixe data:) */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
@@ -19,7 +17,7 @@ function fileToBase64(file) {
     reader.onload = () => {
       const result = reader.result; // "data:image/png;base64,XXXX"
       if (typeof result === "string") {
-        const base64 = result.split(",")[1]; // garde juste la partie base64
+        const base64 = result.split(",")[1]; // garder seulement la partie base64
         resolve(base64);
       } else {
         resolve(null);
@@ -30,17 +28,15 @@ function fileToBase64(file) {
   });
 }
 
-/**
- * Insère un tableau 1x2 invisible : texte (gauche) + image (droite).
- */
+/** Insère un tableau 1x2 invisible : texte (gauche) + image (droite). */
 async function insertTwoColumnLayout() {
   const leftText = (document.getElementById("leftText").value || "").trim();
-  const leftWidth = clampPct(parseInt(document.getElementById("leftWidth").value, 10) || 60);
-  const rightWidth = clampPct(parseInt(document.getElementById("rightWidth").value, 10) || 40);
-  const imgWidthPx = Math.max(40, parseInt(document.getElementById("imgWidth").value, 10) || 220);
+  const leftWidth = clampPct(parseInt(document.getElementById("leftWidth")?.value, 10) || 60);
+  const rightWidth = clampPct(parseInt(document.getElementById("rightWidth")?.value, 10) || 40);
+  const imgWidthPx = Math.max(40, parseInt(document.getElementById("imgWidth")?.value, 10) || 220);
 
   const fileInput = document.getElementById("imageFile");
-  const file = fileInput.files && fileInput.files[0];
+  const file = fileInput && fileInput.files && fileInput.files[0];
   const base64Img = await fileToBase64(file);
 
   await Word.run(async (context) => {
@@ -49,7 +45,7 @@ async function insertTwoColumnLayout() {
     // Crée un tableau 1 ligne / 2 colonnes
     const table = body.insertTable(1, 2, Word.InsertLocation.end, [[leftText || ""]]);
 
-    // Enlève les bordures (tableau invisible)
+    // Enlève toutes les bordures (tableau invisible)
     table.getBorder("InsideVertical").clear();
     table.getBorder("InsideHorizontal").clear();
     table.getBorder("Top").clear();
@@ -58,15 +54,15 @@ async function insertTwoColumnLayout() {
     table.getBorder("Right").clear();
     table.getBorder("Outside").clear();
 
-    // Largeur des colonnes (en %)
+    // Largeur des colonnes (selon build, Word peut ignorer les %)
     try {
-      table.columns.getItemAt(0).width = leftWidth;   // Word interprète en % sur certaines versions
-      table.columns.getItemAt(1).width = rightWidth;
+      table.columns.getItemAt(0).width = leftWidth;   // %
+      table.columns.getItemAt(1).width = rightWidth;  // %
     } catch (e) {
-      // Certaines builds ignorent width en %, on laisse Word ajuster automatiquement.
+      // Si non supporté, Word fera l'ajustement auto.
     }
 
-    // Cellule gauche : place le texte si vide
+    // Cellule gauche : texte
     const row = table.rows.getFirst();
     const leftCellBody = row.cells.getItemAt(0).body;
     if (!leftText) {
@@ -74,7 +70,7 @@ async function insertTwoColumnLayout() {
       leftCellBody.insertParagraph("Texte à gauche…", Word.InsertLocation.start);
     }
 
-    // Cellule droite : insère l'image si fournie, sinon un placeholder
+    // Cellule droite : image ou placeholder
     const rightCellBody = row.cells.getItemAt(1).body;
     if (base64Img) {
       const pic = rightCellBody.insertInlinePictureFromBase64(base64Img, Word.InsertLocation.start);
