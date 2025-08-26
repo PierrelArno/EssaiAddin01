@@ -2,34 +2,39 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Texte gauche / Image droite</title>
+  <title>Word Add-in — Images</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <link rel="stylesheet" href="./images.css" />
 </head>
 <body>
-  <main>
+
+  <!-- Écran d’accueil -->
+  <div id="intro-screen" class="intro">
+    <h1>Bienvenue 👋</h1>
+    <p>Prêt à commencer l’exercice ?</p>
+    <button id="intro-start" onclick="startProject()">Commencer le projet</button>
+  </div>
+
+  <!-- Contenu principal du projet (caché au début) -->
+  <main id="project-main" hidden>
     <h1>Texte ⬅️ | Image ➡️</h1>
 
     <label for="leftText">Texte (colonne gauche)</label>
-    <textarea id="leftText" rows="3" placeholder="Écris ton texte ici..."></textarea>
+    <textarea id="leftText" rows="4" placeholder="Écris ton texte ici..."></textarea>
 
-    <label for="imageFile">Image (colonne droite)</label>
-    <input id="imageFile" type="file" accept="image/*" />
+    <label for="imageFile">Image (PNG / JPEG / GIF)</label>
+    <input id="imageFile" type="file" accept=".png,.jpg,.jpeg,.gif,image/png,image/jpeg,image/gif" />
 
-    <div>
-      <label for="leftWidth">Largeur gauche (%)</label>
-      <input id="leftWidth" type="number" value="60" min="10" max="90" />
-      <label for="rightWidth">Largeur droite (%)</label>
-      <input id="rightWidth" type="number" value="40" min="10" max="90" />
-    </div>
-
-    <div>
+    <div class="controls-col">
       <label for="imgWidth">Largeur image (px)</label>
       <input id="imgWidth" type="number" value="220" min="40" />
+      <button class="ghost" onclick="__safeRun(clearDocument)">Réinitialiser le document</button>
     </div>
 
-    <button id="btnInsert">Insérer texte + image</button>
-    <button id="btnAlt">Alternative (image en dessous à droite)</button>
+    <button id="btnInsert" onclick="__safeRun(insertTextAndImage)">
+      Insérer : texte gauche + image droite
+    </button>
   </main>
 
   <script src="./images.js"></script>
