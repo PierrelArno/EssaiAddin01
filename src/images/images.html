@@ -1,42 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>Word Add-in — Images</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <title>Exercice — image à gauche / texte à droite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <link rel="stylesheet" href="./images.css" />
+  <link rel="stylesheet" href="images.css"/>
 </head>
 <body>
 
-  <!-- Écran d’accueil -->
-  <div id="intro-screen" class="intro">
-    <h1>Bienvenue 👋</h1>
-    <p>Prêt à commencer l’exercice ?</p>
-    <button id="intro-start" onclick="startProject()">Commencer le projet</button>
+  <!-- GATE / Intro: affiché au chargement -->
+  <div id="images-gate" class="gate">
+    <div class="gate-card">
+      <h1>Bienvenue 👋</h1>
+      <p>Prêt à commencer l'exercice ?</p>
+      <button class="primary" onclick="imagesStart()">Commencer l'exercice</button>
+      <p id="prevention">Retirer le texte de la page Word pour accéder à l'exercice</p>
+    </div>
   </div>
 
-  <!-- Contenu principal du projet (caché au début) -->
-  <main id="project-main" hidden>
-    <h1>Texte ⬅️ | Image ➡️</h1>
+  <!-- Projet : caché tant que l'utilisateur n'a pas cliqué -->
+  <main id="images-main" class="panel">
+  <h1>Aligner une image à gauche et un texte à droite</h1>
 
-    <label for="leftText">Texte (colonne gauche)</label>
-    <textarea id="leftText" rows="4" placeholder="Écris ton texte ici..."></textarea>
+  <section class="instructions">
+    <h2>Consignes (à faire dans Word)</h2>
+    <ol>
+      <li>Insère <strong>une image</strong> et place-la <em>à gauche</em> (ou laisse “Aligné sur le texte”).</li>
+      <li>Ajoute un paragraphe avec <strong>du texte</strong> et aligne-le <em>à droite</em>.</li>
+      <li>Clique <strong>Valider</strong> : si tout est bon, ❌ passe à ✔️.</li>
+    </ol>
 
-    <label for="imageFile">Image (PNG / JPEG / GIF)</label>
-    <input id="imageFile" type="file" accept=".png,.jpg,.jpeg,.gif,image/png,image/jpeg,image/gif" />
-
-    <div class="controls-col">
-      <label for="imgWidth">Largeur image (px)</label>
-      <input id="imgWidth" type="number" value="220" min="40" />
-      <button class="ghost" onclick="__safeRun(clearDocument)">Réinitialiser le document</button>
-    </div>
-
-    <button id="btnInsert" onclick="__safeRun(insertTextAndImage)">
-      Insérer : texte gauche + image droite
+    <!-- Bouton Tuto -->
+    <button id="imagesTutoBtn" class="secondary" type="button" onclick="imagesToggleTuto()">
+      📘 Afficher le tutoriel
     </button>
-  </main>
 
-  <script src="./images.js"></script>
+    <!-- Bloc Tuto (caché par défaut) -->
+    <div id="imagesTuto" class="tuto" hidden>
+      <h3>🧭 Tutoriel — sans donner la solution</h3>
+      <p>Voici comment procéder dans Word, étape par étape :</p>
+      <ol>
+        <li>
+          <strong>Insérer une image</strong><br/>
+          Onglet <em>Insertion</em> → <em>Images</em> → choisis un fichier.  
+          Si elle “flotte”, tu peux la remettre <em>Aligné sur le texte</em> via l’icône d’habillage.
+        </li>
+        <li>
+          <strong>Positionner l’image à gauche</strong><br/>
+          Laisse l’image à gauche par défaut, ou choisis l’option d’habillage qui colle à la marge gauche.
+        </li>
+        <li>
+          <strong>Ajouter un texte aligné à droite</strong><br/>
+          Clique dans le document → tape ton texte → onglet <em>Accueil</em> → bouton <em>Aligner à droite</em>.
+        </li>
+        <li>
+          <strong>Vérifier</strong><br/>
+          Utilise le bouton <em>✅ Valider</em> ci-dessous.  
+          Si besoin, active le bouton <em>¶</em> pour voir les marques de mise en forme.
+        </li>
+      </ol>
+      <p class="hint">Astuce : si l’image est flottante, elle est quand même reconnue si elle est près de la marge gauche.</p>
+    </div>
+  </section>
+
+  <div class="buttons">
+    <button id="imagesValidateBtn" class="primary" onclick="imagesValidate()">✅ Valider</button>
+  </div>
+
+  <div id="imagesStatus" class="status fail">
+    <span id="imagesState">❌</span> Exercice non encore réussi
+  </div>
+
+  <details class="details">
+    <summary>🔍 Que vérifie la validation ?</summary>
+    <ul>
+      <li>Au moins <strong>une image</strong> (inline ou flottante) dans le document.</li>
+      <li>Au moins un paragraphe avec du <strong>texte aligné à droite</strong>.</li>
+      <li>Si l’image est flottante, elle est détectée si elle est positionnée à gauche.</li>
+    </ul>
+  </details>
+</main>
+  <script src="images.js"></script>
 </body>
 </html>

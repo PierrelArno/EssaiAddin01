@@ -1,143 +1,168 @@
-// ===============================
-//  Word Add-in — Texte & Image
-//  (Full API Word — aucun tableau)
-// ===============================
-
-/* ==== Silencer "Script error." (Word/Office cross-origin noise) ==== */
+/* ========= Neutraliser "Script error." (bruit cross-origin de Word/Script Lab) ========= */
 (function () {
-  const isGenericMsg = (msg) =>
-    msg === "Script error." || (typeof msg === "string" && /(^|[^a-z])script error\.?/i.test(msg));
-
-  // Capture-phase listener: stoppe les handlers en aval (ex: handleError)
-  window.addEventListener(
-    "error",
-    (e) => {
-      const msg = e?.message || "";
-      const src = e?.filename || "";
-      if (isGenericMsg(msg) && (!src || src === "")) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        return false;
-      }
-    },
-    true
-  );
-
-  // window.onerror shield
-  const prevOnError = window.onerror;
-  window.onerror = function (msg, src) {
-    if (isGenericMsg(msg) && (!src || src === "")) return true;
-    if (typeof prevOnError === "function") return prevOnError.apply(this, arguments);
-    return false;
-  };
-
-  // Unhandled rejections (génériques)
-  window.addEventListener("unhandledrejection", (e) => {
-    const r = e?.reason;
-    const msg = (r && (r.message || r.toString?.())) || "";
-    if (isGenericMsg(msg)) e.preventDefault();
-  });
-
-  // Helper d'exécution sûre pour les boutons
-  window.__safeRun = async (fn) => {
-    try { await fn(); }
-    catch (err) {
-      console.error("[SoftError]", err && err.stack ? err.stack : err);
-      alert("Une erreur est survenue. Détails en console.");
+  const isGeneric = (m)=> m==="Script error." || /(^|[^a-z])script error\.?/i.test(String(m||""));
+  // capture-phase: bloque les handlers de Script Lab
+  window.addEventListener("error", (e)=>{
+    if(isGeneric(e?.message) && (!e?.filename || e.filename==="")){
+      e.preventDefault(); e.stopImmediatePropagation(); return false;
     }
+  }, true);
+  // onerror fallback
+  const prev = window.onerror;
+  window.onerror = function(msg, src){
+    if(isGeneric(msg) && (!src || src==="")) return true;
+    return typeof prev==="function" ? prev.apply(this, arguments) : false;
   };
+  // promesses
+  window.addEventListener("unhandledrejection",(e)=>{
+    const r=e?.reason, m=(r&& (r.message||r.toString?.()))||"";
+    if(isGeneric(m)) e.preventDefault();
+  });
 })();
 
-/** Utils */
-function clampNum(v, min, max, fallback) {
-  const n = Number(v);
-  if (Number.isNaN(n)) return fallback;
-  return Math.max(min, Math.min(max, n));
-}
-
-/** Convertit un fichier image en base64 (sans préfixe data:) + mime */
-function fileToBase64AndMime(file) {
-  return new Promise((resolve) => {
-    if (!file) return resolve({ base64: null, mime: "image/png" });
-
-    const allowed = ["image/png", "image/jpeg", "image/gif"];
-    const mime = allowed.includes(file.type) ? file.type : "image/png";
-    if (file.type && !allowed.includes(file.type)) {
-      alert("Format non supporté. Utilise PNG / JPEG / GIF.");
-      return resolve({ base64: null, mime });
+/* =================== Helpers statut =================== */
+function imagesSetDone(done){
+  const icon = document.getElementById("imagesState");
+  const box  = document.getElementById("imagesStatus");
+  if(!icon || !box) return;
+  if(done){
+    icon.textContent = "✔️";
+    box.classList.remove("fail"); box.classList.add("ok");
+    box.textContent = "✔️ Exercice réussi !";
+  }else{
+    icon.textContent = "❌";
+    box.classList.remove("ok"); box.classList.add("fail");
+    box.textContent = "❌ Exercice non encore réussi";
+  }
+  // Note: localStorage retiré car non supporté dans les artifacts Claude
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem("images_done", done ? "1" : "0");
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || "");
-      const i = dataUrl.indexOf(",");
-      const base64 = i === -1 ? null : dataUrl.slice(i + 1);
-      resolve({ base64, mime });
-    };
-    reader.onerror = () => resolve({ base64: null, mime });
-    reader.readAsDataURL(file);
-  });
+  } catch(e) {
+    // Ignore silencieusement si localStorage n'est pas disponible
+  }
 }
 
-// PNG 64×64 de test (si aucune image n'est fournie)
-const TEST_PNG_BASE64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsSAAALEgHS3X78AAAAGXRFWHRTb2Z0d2FyZQBwYWludC5uZXQgNC4yLjGqq7UAAABhSURBVHic7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPgN5cQAAf3p4eQAAAABJRU5ErkJggg==";
+// Restaurer état au chargement
+(function(){ 
+  try {
+    if (typeof localStorage !== 'undefined') {
+      imagesSetDone(localStorage.getItem("images_done")==="1"); 
+    }
+  } catch(e) {
+    imagesSetDone(false);
+  }
+})();
 
-/** Nettoie un texte pour un paragraphe Word */
-function sanitizeText(s) {
-  return (s || "").replace(/\r\n|\r|\n/g, " ");
-}
+/* =================== Gate =================== */
+async function imagesStart() {
+  let hasContent = false;
 
-/** Insert: paragraphe texte (gauche), puis paragraphe image (droite). AUCUN tableau. */
-async function insertTextAndImage() {
-  const leftTextRaw = (document.getElementById("leftText").value || "").trim();
-  const leftText = sanitizeText(leftTextRaw || "Texte à gauche…");
-  const imgWidthPx = clampNum(document.getElementById("imgWidth").value, 40, 4096, 220);
-
-  const file = document.getElementById("imageFile").files[0];
-  const { base64 } = await fileToBase64AndMime(file);
-  const imgBase64 = base64 || TEST_PNG_BASE64;
-
+  // Étape 1 : vérifier si le document contient déjà du texte
   await Word.run(async (context) => {
     const body = context.document.body;
-
-    // 1) Paragraphe pour le texte (gauche)
-    const pText = body.insertParagraph(leftText, Word.InsertLocation.end);
-    pText.alignment = "Left";
-
-    // 2) Paragraphe pour l'image (droite)
-    const pImg = body.insertParagraph("", Word.InsertLocation.end);
-    const pic = pImg.insertInlinePictureFromBase64(imgBase64, Word.InsertLocation.end);
-    pic.width = imgWidthPx;
-    pImg.alignment = "Right";
-
+    const paras = body.paragraphs;
+    paras.load("items/text");
     await context.sync();
+
+    hasContent = paras.items.some(p => (p.text || "").trim().length > 0);
   });
+
+  // Étape 3 : afficher l'exercice
+  document.getElementById("images-gate").classList.add("is-hidden");
+  document.getElementById("images-main").hidden = false;
+
+  // Reset état
+  imagesSetDone(false);
+  const status = document.getElementById("imagesStatus");
+  if (status) status.textContent = "❌ Exercice non encore réussi (document prêt)";
 }
 
-/** Vider le document (utilitaire) */
-async function clearDocument() {
-  await Word.run(async (context) => {
-    context.document.body.clear();  // Word garde juste le paragraphe final (vide, obligatoire)
-    await context.sync();
-  });
+window.imagesStart = imagesStart;
+
+
+
+/* =================== Validation (inline + flottant) =================== */
+async function imagesValidate(){
+  let okA=false, okB=false;
+  const issues=[];
+
+  try {
+    await Word.run(async (ctx)=>{
+      const body   = ctx.document.body;
+      const paras  = body.paragraphs;
+      const pics   = body.inlinePictures;
+      const shapes = body.shapes;
+
+      paras.load("items/text,items/alignment");
+      pics.load("items");
+      shapes.load("items/left,items.wrapType");
+
+      await ctx.sync();
+
+      const hasAnyImage = (pics.items.length + shapes.items.length) > 0;
+      if(!hasAnyImage) issues.push("aucune image (inline ou flottante) trouvée");
+
+      const hasRightText = paras.items.some(p =>
+        (p.alignment==="Right" || p.alignment===2) && (p.text||"").trim().length>0
+      );
+      if(!hasRightText) issues.push("pas de paragraphe de texte aligné à droite");
+
+      okA = hasAnyImage && hasRightText;
+
+      let hasFloatingLeftShape=false;
+      try{
+        hasFloatingLeftShape = shapes.items.some(s=>{
+          const wrap=(s.wrapType||"").toString().toLowerCase();
+          const left=Number(s.left);
+          return wrap && wrap!=="inline" && !Number.isNaN(left) && left < 200;
+        });
+      }catch{}
+
+      const hasSomeText = paras.items.some(p => (p.text||"").trim().length>0);
+      okB = hasFloatingLeftShape && hasSomeText;
+
+      const ok = okA || okB;
+      imagesSetDone(ok);
+      
+      const status = document.getElementById("imagesStatus");
+      if(ok){
+        status.textContent = okA
+          ? "✔️ Exercice réussi ! (image présente + texte aligné à droite)"
+          : "✔️ Exercice réussi ! (image flottante détectée à gauche + texte)";
+        
+        // Animation de succès
+        status.style.animation = "success-pulse 0.6s ease-out";
+        setTimeout(() => {
+          status.style.animation = "";
+        }, 600);
+      } else {
+        status.textContent = "⚠️ À corriger : " + [...new Set(issues)].join(" • ");
+      }
+    });
+  } catch(error) {
+    console.error("Erreur lors de la validation:", error);
+    const status = document.getElementById("imagesStatus");
+    status.textContent = "❌ Erreur lors de la validation. Vérifiez que vous êtes dans Word.";
+    status.className = "status fail";
+  }
 }
+window.imagesValidate = imagesValidate;
 
+// Afficher/masquer le tutoriel
+function imagesToggleTuto() {
+  const bloc = document.getElementById('imagesTuto');
+  const btn  = document.getElementById('imagesTutoBtn');
+  if (!bloc || !btn) return;
 
-// Expose pour les onclick HTML
-window.insertTextAndImage = insertTextAndImage;
-window.clearDocument = clearDocument;
-
-function startProject(){
-  // masque l’intro
-  document.getElementById('intro-screen').classList.add('is-hidden');
-
-  // affiche l’UI du projet
-  const main = document.getElementById('project-main');
-  main.hidden = false;
-
-  // focus sur le premier champ utile
-  const first = document.getElementById('leftText') || main.querySelector('textarea, input, button');
-  if (first) first.focus();
+  const isHidden = bloc.hasAttribute('hidden');
+  if (isHidden) {
+    bloc.removeAttribute('hidden');
+    btn.textContent = "📘 Masquer le tutoriel";
+  } else {
+    bloc.setAttribute('hidden', '');
+    btn.textContent = "📘 Afficher le tutoriel";
+  }
 }
-window.startProject = startProject;
+window.imagesToggleTuto = imagesToggleTuto;
