@@ -84,72 +84,87 @@ window.imagesStart = imagesStart;
 
 
 /* =================== Validation (inline + flottant) =================== */
-async function imagesValidate(){
-  let okA=false, okB=false;
-  const issues=[];
+async function imagesValidate() {
+  let okA = false, okB = false;
+  const issues = [];
 
   try {
-    await Word.run(async (ctx)=>{
-      const body   = ctx.document.body;
-      const paras  = body.paragraphs;
-      const pics   = body.inlinePictures;
-      const shapes = body.shapes;
+    await Word.run(async (ctx) => {
+      const body  = ctx.document.body;
+      const paras = body.paragraphs;
+      const pics  = body.inlinePictures;
 
+      // On charge ce qui est 100% supporté sur le web
       paras.load("items/text,items/alignment");
       pics.load("items");
-      shapes.load("items/left,items.wrapType");
-
       await ctx.sync();
 
-      const hasAnyImage = (pics.items.length + shapes.items.length) > 0;
-      if(!hasAnyImage) issues.push("aucune image (inline ou flottante) trouvée");
+      const hasInlineImage = pics.items.length > 0;
+      if (!hasInlineImage) issues.push("aucune image en ligne trouvée");
 
       const hasRightText = paras.items.some(p =>
-        (p.alignment==="Right" || p.alignment===2) && (p.text||"").trim().length>0
+        ((p.alignment === "Right") || (p.alignment === 2)) &&
+        (p.text || "").trim().length > 0
       );
-      if(!hasRightText) issues.push("pas de paragraphe de texte aligné à droite");
+      if (!hasRightText) issues.push("pas de paragraphe de texte aligné à droite");
 
-      okA = hasAnyImage && hasRightText;
+      // Cas A : image inline + texte à droite
+      okA = hasInlineImage && hasRightText;
 
-      let hasFloatingLeftShape=false;
-      try{
-        hasFloatingLeftShape = shapes.items.some(s=>{
-          const wrap=(s.wrapType||"").toString().toLowerCase();
-          const left=Number(s.left);
-          return wrap && wrap!=="inline" && !Number.isNaN(left) && left < 200;
-        });
-      }catch{}
+      // Cas B (optionnel) : essayer shapes UNIQUEMENT si dispo
+      let shapesSupported = false;
+      try {
+        // Petit test de présence + requirement set
+        shapesSupported =
+          Office.context.requirements.isSetSupported("WordApi", "1.3") &&
+          typeof body.shapes !== "undefined";
+      } catch (_) { shapesSupported = false; }
 
-      const hasSomeText = paras.items.some(p => (p.text||"").trim().length>0);
-      okB = hasFloatingLeftShape && hasSomeText;
+      if (shapesSupported) {
+        try {
+          const shapes = body.shapes;
+          shapes.load("items/left,items.wrapType");
+          await ctx.sync();
+
+          const hasFloatingLeftShape = shapes.items.some(s => {
+            const wrap = (s.wrapType || "").toString().toLowerCase();
+            const left = Number(s.left);
+            return wrap && wrap !== "inline" && !Number.isNaN(left) && left < 200;
+          });
+
+          const hasSomeText = paras.items.some(p => (p.text || "").trim().length > 0);
+          okB = hasFloatingLeftShape && hasSomeText;
+        } catch (_) {
+          // On ignore si le web backend ne renvoie rien d’exploitable
+          okB = false;
+        }
+      } else {
+        // Sur Web : on ne bloque PAS l’utilisateur parce que shapes est absent
+        okB = false;
+      }
 
       const ok = okA || okB;
       imagesSetDone(ok);
-      
+
       const status = document.getElementById("imagesStatus");
-      if(ok){
+      if (ok) {
         status.textContent = okA
-          ? "✔️ Exercice réussi ! (image présente + texte aligné à droite)"
-          : "✔️ Exercice réussi ! (image flottante détectée à gauche + texte)";
-        
-        // Animation de succès
-        status.style.animation = "success-pulse 0.6s ease-out";
-        setTimeout(() => {
-          status.style.animation = "";
-        }, 600);
+          ? "✔️ Exercice réussi (image en ligne + texte aligné à droite)."
+          : "✔️ Exercice réussi (image flottante à gauche + texte).";
+        status.className = "status ok";
       } else {
-        status.textContent = "⚠️ À corriger : " + [...new Set(issues)].join(" • ");
+        status.textContent = "À corriger : " + [...new Set(issues)].join(" · ");
+        status.className = "status fail";
       }
     });
-  } catch(error) {
-    console.error("Erreur lors de la validation:", error);
+  } catch (error) {
+    console.error("Validation error (web-safe):", error);
     const status = document.getElementById("imagesStatus");
-    status.textContent = "❌ Erreur lors de la validation. Vérifiez que vous êtes dans Word.";
+    status.textContent = "❌ Erreur pendant la validation (Word Online).";
     status.className = "status fail";
   }
 }
 window.imagesValidate = imagesValidate;
-
 // Afficher/masquer le tutoriel
 function imagesToggleTuto() {
   const bloc = document.getElementById('imagesTuto');
