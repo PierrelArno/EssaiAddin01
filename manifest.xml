@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
+
   <Id>92372286-135c-43f7-b79c-8723fee81d31</Id>
-  <!-- ⬅⬅⬅ bump la version -->
-  <Version>1.0.1.0</Version>
+  <Version>1.0.2.0</Version>
   <ProviderName>Contoso</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
 
   <DisplayName DefaultValue="Aligner une image à droite avec du texte à gauche"/>
   <Description DefaultValue="A template to get started."/>
 
-  <!-- enlever les // en double -->
   <IconUrl DefaultValue="https://pierrelarno.github.io/EssaiAddin01/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://pierrelarno.github.io/EssaiAddin01/assets/icon-64.png"/>
 
   <SupportUrl DefaultValue="https://www.contoso.com/help"/>
 
-  <!-- autoriser ton domaine GitHub Pages -->
+  <!-- Autoriser GitHub Pages -->
   <AppDomains>
     <AppDomain>https://pierrelarno.github.io</AppDomain>
   </AppDomains>
@@ -24,14 +27,15 @@
     <Host Name="Document"/>
   </Hosts>
 
+  <!-- URL par défaut de la taskpane (chargée si on ouvre sans passer par le ruban) -->
   <DefaultSettings>
-    <!-- enlever les // en double -->
-    <SourceLocation DefaultValue="https://pierrelarno.github.io/EssaiAddin01/images.html"/>
+    <SourceLocation DefaultValue="https://pierrelarno.github.io/EssaiAddin01/images.html?v=102"/>
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
 
-  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+  <VersionOverrides xsi:type="VersionOverridesV1_0"
+    xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides">
     <Hosts>
       <Host xsi:type="Document">
         <DesktopFormFactor>
@@ -41,6 +45,7 @@
             <LearnMoreUrl resid="GetStarted.LearnMoreUrl"/>
           </GetStarted>
 
+          <!-- Obligatoire pour les commandes ruban -->
           <FunctionFile resid="Commands.Url"/>
 
           <ExtensionPoint xsi:type="PrimaryCommandSurface">
@@ -52,6 +57,7 @@
                   <bt:Image size="32" resid="Icon.32x32"/>
                   <bt:Image size="80" resid="Icon.80x80"/>
                 </Icon>
+
                 <Control xsi:type="Button" id="TaskpaneButton">
                   <Label resid="TaskpaneButton.Label"/>
                   <Supertip>
@@ -84,19 +90,20 @@
 
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812"/>
-        <bt:Url id="Commands.Url" DefaultValue="https://pierrelarno.github.io/EssaiAddin01/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://pierrelarno.github.io/EssaiAddin01/images.html"/>
+        <!-- IMPORTANT : doit exister et répondre 200 -->
+        <bt:Url id="Commands.Url" DefaultValue="https://pierrelarno.github.io/EssaiAddin01/commands.html?v=102"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://pierrelarno.github.io/EssaiAddin01/images.html?v=102"/>
       </bt:Urls>
 
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with your sample add-in!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Commands Group"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Monter le logo"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="Exercice"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Ouvrir l’exercice"/>
       </bt:ShortStrings>
 
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Your sample add-in loaded successfully. Go to the HOME tab and click the 'Show Task Pane' button to get started."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to Show a Taskpane modifier"/>
+        <bt:String id="GetStarted.Description" DefaultValue="Your sample add-in loaded successfully. Go to the HOME tab and click the button to start."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Afficher le panneau de l’exercice"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
