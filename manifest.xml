@@ -7,50 +7,51 @@
   xsi:type="TaskPaneApp">
 
   <Id>92372286-135c-43f7-b79c-8723fee81d31</Id>
-  <Version>1.0.0.0</Version>
-  <ProviderName>Contoso</ProviderName>
-  <DefaultLocale>en-US</DefaultLocale>
+
+  <!-- !!! IMPORTANT: bump this every time you change the manifest -->
+  <Version>1.0.1.0</Version>
+
+  <ProviderName>PierreLarno</ProviderName>
+  <DefaultLocale>fr-FR</DefaultLocale>
 
   <DisplayName DefaultValue="Aligner une image à droite avec du texte à gauche"/>
-  <Description DefaultValue="A template to get started."/>
+  <Description DefaultValue="Complément Word pour l'exercice image à droite / texte à gauche."/>
 
-  <!-- pas de double // -->
+  <!-- No double slashes -->
   <IconUrl DefaultValue="https://pierrelarno.github.io/EssaiAddin01/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://pierrelarno.github.io/EssaiAddin01/assets/icon-64.png"/>
 
-  <SupportUrl DefaultValue="https://www.contoso.com/help"/>
+  <SupportUrl DefaultValue="https://pierrelarno.github.io/EssaiAddin01/"/>
 
-  <!-- Autoriser GitHub Pages -->
+  <!-- AppDomains: NO wildcards. Only domains you actually load -->
   <AppDomains>
     <AppDomain>https://pierrelarno.github.io</AppDomain>
-    <AppDomain>https://*.github.io</AppDomain>
   </AppDomains>
 
   <Hosts>
     <Host Name="Document"/>
   </Hosts>
 
-  <!-- Page par défaut de la taskpane -->
+  <!-- Taskpane default page -->
   <DefaultSettings>
     <SourceLocation DefaultValue="https://pierrelarno.github.io/EssaiAddin01/images.html"/>
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
 
-  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+  <VersionOverrides xsi:type="VersionOverridesV1_0" xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides">
     <Hosts>
       <Host xsi:type="Document">
         <DesktopFormFactor>
-
-          <!-- Optionnel, texte “Get Started” -->
           <GetStarted>
             <Title resid="GetStarted.Title"/>
             <Description resid="GetStarted.Description"/>
             <LearnMoreUrl resid="GetStarted.LearnMoreUrl"/>
           </GetStarted>
 
-          <!-- *** Ruban: crée les "…" et ton bouton *** -->
+          <!-- Ribbon (3 dots > group > button). FunctionFile must exist and be reachable -->
           <FunctionFile resid="Commands.Url"/>
+
           <ExtensionPoint xsi:type="PrimaryCommandSurface">
             <OfficeTab id="TabHome">
               <Group id="CommandsGroup">
@@ -94,19 +95,20 @@
 
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812"/>
+        <!-- commands.html MUST exist at this path in your GitHub Pages site -->
         <bt:Url id="Commands.Url"           DefaultValue="https://pierrelarno.github.io/EssaiAddin01/commands.html"/>
         <bt:Url id="Taskpane.Url"           DefaultValue="https://pierrelarno.github.io/EssaiAddin01/images.html"/>
       </bt:Urls>
 
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title"        DefaultValue="Get started with your sample add-in!"/>
-        <bt:String id="CommandsGroup.Label"     DefaultValue="Exercice"/>
-        <bt:String id="TaskpaneButton.Label"    DefaultValue="Ouvrir l'exercice"/>
+        <bt:String id="GetStarted.Title"     DefaultValue="Démarrer le complément"/>
+        <bt:String id="CommandsGroup.Label"  DefaultValue="Exercice"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Ouvrir l'exercice"/>
       </bt:ShortStrings>
 
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description"  DefaultValue="Your sample add-in loaded successfully. Go to the HOME tab and click the button to start."/>
-        <bt:String id="TaskpaneButton.Tooltip"  DefaultValue="Ouvrir le panneau de l'exercice"/>
+        <bt:String id="GetStarted.Description" DefaultValue="Cliquez sur le bouton du ruban pour ouvrir le panneau du complément."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Ouvrir le panneau de l'exercice"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
