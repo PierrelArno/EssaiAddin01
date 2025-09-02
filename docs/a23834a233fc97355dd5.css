@@ -1,0 +1,404 @@
+:root {
+  --bg: #0a0c12;
+  --surface: #141a25;
+  --surface-hover: #1a2332;
+  --ink: #eaeefb;
+  --muted: #9aa3b2;
+  --line: #2b3144;
+  --accent: #5b8cff;
+  --accent-hover: #729eff;
+  --accent-light: rgba(91, 140, 255, 0.1);
+  --ok: #2ecc71;
+  --ok-bg: rgba(46, 204, 113, 0.1);
+  --bad: #e74c3c;
+  --bad-bg: rgba(231, 76, 60, 0.1);
+  --warning: #f39c12;
+  --warning-bg: rgba(243, 156, 18, 0.1);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --border-radius: 14px;
+  --border-radius-sm: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, var(--bg) 0%, #0d1017 100%);
+  color: var(--ink);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* =============== ANIMATIONS =============== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes success-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(46, 204, 113, 0.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes button-press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* =============== GATE (intro plein écran) =============== */
+.gate {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(10, 12, 18, 0.98) 0%, rgba(13, 16, 23, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.gate-card {
+  background: linear-gradient(135deg, var(--surface) 0%, #1a2332 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--border-radius);
+  padding: 32px 28px;
+  min-width: 320px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.gate-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.gate-card h1 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--ink), var(--accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gate-card p {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.gate .primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 14px 24px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(91, 140, 255, 0.3);
+}
+
+.gate .primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(91, 140, 255, 0.4);
+}
+
+.gate .primary:active {
+  animation: button-press 0.2s ease;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+/* =============== PANNEAU PRINCIPAL =============== */
+.panel {
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 32px 24px 40px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-hover) 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  animation: fadeInUp 0.6s ease-out;
+  position: relative;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover), var(--accent));
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+h2 {
+  margin: 24px 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent-hover);
+}
+
+/* =============== INSTRUCTIONS =============== */
+.instructions {
+  margin-bottom: 24px;
+}
+
+.instructions ol {
+  margin: 12px 0 0 20px;
+  padding: 0;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.instructions li strong {
+  color: var(--accent-hover);
+  font-weight: 600;
+}
+
+.instructions li em {
+  color: var(--warning);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.hint {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--accent-light);
+  border: 1px solid rgba(91, 140, 255, 0.2);
+  border-radius: var(--border-radius-sm);
+  color: var(--muted);
+  font-size: 14px;
+  position: relative;
+}
+
+.hint::before {
+  content: '💡';
+  margin-right: 8px;
+}
+
+/* =============== BOUTONS =============== */
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  margin: 24px 0;
+  align-items: center;
+}
+
+button {
+  padding: 14px 20px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(91, 140, 255, 0.3);
+}
+
+.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(91, 140, 255, 0.4);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+  animation: button-press 0.2s ease;
+}
+
+/* Bouton Initialiser au centre */
+.buttons button:nth-child(2) {
+  background: linear-gradient(135deg, var(--warning) 0%, #e67e22 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+.buttons button:nth-child(2):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+}
+
+/* =============== STATUT =============== */
+.status {
+  margin-top: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.status span {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.status.fail {
+  color: var(--bad);
+  background: var(--bad-bg);
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.status.ok {
+  color: var(--ok);
+  background: var(--ok-bg);
+  border-color: rgba(46, 204, 113, 0.3);
+  box-shadow: 0 4px 20px rgba(46, 204, 113, 0.1);
+}
+
+.status:not(.fail):not(.ok) {
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-color: rgba(243, 156, 18, 0.3);
+}
+
+/* =============== DÉTAILS =============== */
+.details {
+  margin-top: 20px;
+  color: var(--muted);
+}
+
+.details summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 600;
+  color: var(--accent-hover);
+  transition: color 0.3s ease;
+}
+
+.details summary:hover {
+  color: var(--accent);
+}
+
+.details[open] summary {
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.details ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.details li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.details strong {
+  color: var(--accent-hover);
+}
+
+.tuto {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  border-color: rgba(40, 151, 255, 0.3);
+  background-color: #8aafff;
+}
+
+.tuto h3 {
+  margin: 0 0 8px;
+}
+
+.tuto ol { margin: 8px 0 0 18px; }
+.tuto li { margin: 6px 0; }
+
+#prevention {
+  color: red;
+}
+#prevention {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ffb54c;
+}
