@@ -397,3 +397,8 @@ button:active {
 #prevention {
   color: red;
 }
+#prevention {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ffb54c;
+}

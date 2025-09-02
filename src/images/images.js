@@ -57,28 +57,41 @@ function imagesSetDone(done){
 
 /* =================== Gate =================== */
 async function imagesStart() {
-  let hasContent = false;
+  try {
+    await Word.run(async (context) => {
+      const body = context.document.body;
+      const paras = body.paragraphs;
+      paras.load("items/text");
+      await context.sync();
 
-  // Étape 1 : vérifier si le document contient déjà du texte
-  await Word.run(async (context) => {
-    const body = context.document.body;
-    const paras = body.paragraphs;
-    paras.load("items/text");
-    await context.sync();
+      const hasContent = paras.items.some(p => (p.text || "").trim().length > 0);
 
-    hasContent = paras.items.some(p => (p.text || "").trim().length > 0);
-  });
+      if (hasContent) {
+        // Show the warning line and block access
+        const warn = document.getElementById("prevention");
+        if (warn) {
+          warn.hidden = false;
+          warn.textContent = "⚠️ Le document contient déjà du contenu. Supprimez-le dans Word, puis recliquez pour démarrer.";
+        }
+        return; // stop here, do NOT open the exercise
+      }
 
-  // Étape 3 : afficher l'exercice
-  document.getElementById("images-gate").classList.add("is-hidden");
-  document.getElementById("images-main").hidden = false;
+      // No content -> open the exercise UI
+      const gate = document.getElementById("images-gate");
+      const main = document.getElementById("images-main");
+      if (gate) gate.classList.add("is-hidden");
+      if (main) main.hidden = false;
 
-  // Reset état
-  imagesSetDone(false);
-  const status = document.getElementById("imagesStatus");
-  if (status) status.textContent = "❌ Exercice non encore réussi (document prêt)";
+      // Reset visual state
+      imagesSetDone(false);
+      const status = document.getElementById("imagesStatus");
+      if (status) status.textContent = "❌ Exercice non encore réussi";
+    });
+  } catch (err) {
+    console.error("imagesStart error:", err);
+    alert("Impossible d’accéder au document Word. Ouvre ce complément dans Word (bureau ou Online), puis réessaie.");
+  }
 }
-
 window.imagesStart = imagesStart;
 
 
